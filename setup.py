@@ -6,7 +6,7 @@ with open('README.md', 'r') as fh:
 setuptools.setup(
     name='decal',
     version='0.0.1',
-    description='A small and declarative MicroPython GUI library for display drivers based on the FrameBuffer interface', # noqa: E501
+    description='A small declarative MicroPython GUI library for display drivers based on the FrameBuffer interface', # noqa: E501
     long_description=long_description,
     long_description_content_type='text/markdown',
     url='https://github.com/submer-crypto/decal',
