@@ -7,6 +7,36 @@ def expand_border(i, direction, attribute, combined):
 
     return combined[i]
 
+def calculate_width(style, parent):
+    if isinstance(style.width, Percentage):
+        if style.box_sizing == BoxSizing.CONTENT:
+            available_width = parent.dimensions.width
+        elif style.box_sizing == BoxSizing.BORDER:
+            available_width = (parent.dimensions.width -
+                style.border_width_left -
+                style.padding_left -
+                style.border_width_right -
+                style.padding_right)
+
+        return style.width * available_width
+    elif style.width is not None:
+        return style.width
+
+def calculate_height(style, parent):
+    if isinstance(style.height, Percentage):
+        if style.box_sizing == BoxSizing.CONTENT:
+            available_height = parent.dimensions.height
+        elif style.box_sizing == BoxSizing.BORDER:
+            available_height = (parent.dimensions.height -
+                style.border_width_top -
+                style.padding_top -
+                style.border_width_bottom -
+                style.padding_bottom)
+
+        return style.height * available_height
+    elif style.height is not None:
+        return style.height
+
 class ScaledBitMap:
     def __init__(self, bitmap, ratio):
         self.bitmap = bitmap
@@ -111,6 +141,38 @@ class Align:
     CENTER = 1
     END = 2
 
+class BoxSizing:
+    CONTENT = 0
+    BORDER = 1
+
+class Percentage:
+    def __init__(self, value):
+        self.value = value
+
+    def __str__(self):
+        return f'{self.value}%'
+
+    def __repr__(self):
+        return f'Percentage({self.value})'
+
+    def __eq__(self, other):
+        if self is other:
+            return True
+
+        if not isinstance(other, Percentage):
+            return False
+
+        return self.value == other.value
+
+    def __hash__(self):
+        return hash(self.value)
+
+    def __mul__(self, other):
+        if isinstance(other, Percentage):
+            other = other.value
+
+        return (other * self.value) // 100
+
 class ComputedStyle:
     PROPERTIES = (
         'margin_top',
@@ -140,7 +202,8 @@ class ComputedStyle:
         'background_color',
         'foreground_color',
         'font',
-        'align')
+        'align',
+        'box_sizing')
 
     @classmethod
     def shorthand(cls,
@@ -209,7 +272,8 @@ class ComputedStyle:
             background_color=Color.TRANSPARENT,
             foreground_color=Color.WHITE,
             font=None,
-            align=Align.START):
+            align=Align.START,
+            box_sizing=BoxSizing.CONTENT):
 
         if border_style_top == BorderStyle.NONE:
             border_width_top = 0
@@ -251,6 +315,7 @@ class ComputedStyle:
         self.foreground_color = foreground_color
         self.font = font
         self.align = align
+        self.box_sizing = box_sizing
 
     def __eq__(self, other):
         if self is other:
@@ -456,10 +521,9 @@ class BlockBox(Box):
 
             self.dimensions.width = parent.dimensions.width - horizontal
         else:
-            self.dimensions.width = self.style.width
+            self.dimensions.width = calculate_width(self.style, parent)
 
-        if self.style.height is not None:
-            self.dimensions.height = self.style.height
+        self.dimensions.height = calculate_height(self.style, parent)
 
         child_height = 0
 
@@ -516,11 +580,8 @@ class InlineBox(Box):
         return hash((super().__hash__(), *self.children))
 
     def layout(self, parent):
-        if self.style.width is not None:
-            self.dimensions.width = self.style.width
-
-        if self.style.height is not None:
-            self.dimensions.height = self.style.height
+        self.dimensions.width = calculate_width(self.style, parent)
+        self.dimensions.height = calculate_height(self.style, parent)
 
         child_width = 0
         child_height = 0
