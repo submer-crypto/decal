@@ -145,6 +145,16 @@ class BoxSizing:
     CONTENT = 0
     BORDER = 1
 
+class TextDecorationLine:
+    NONE = 0
+    UNDERLINE = 1
+    OVERLINE = 2
+    LINE_THROUGH = 3
+
+class TextDecorationStyle:
+    SOLID = 0
+    DASHED = 1
+
 class Percentage:
     def __init__(self, value):
         self.value = value
@@ -202,6 +212,11 @@ class ComputedStyle:
         'background_color',
         'foreground_color',
         'font',
+        'text_decoration_line',
+        'text_decoration_color',
+        'text_decoration_style',
+        'text_decoration_thickness',
+        'text_decoration_offset',
         'align',
         'box_sizing')
 
@@ -217,6 +232,7 @@ class ComputedStyle:
             border_width=None,
             border_style=None,
             border_color=None,
+            text_decoration=(TextDecorationLine.NONE, Color.TRANSPARENT, TextDecorationStyle.SOLID, 0),
             **kwargs):
 
         expand = dict(
@@ -239,7 +255,11 @@ class ComputedStyle:
             border_color_top=expand_border(2, border_top, border_color, border),
             border_color_right=expand_border(2, border_right, border_color, border),
             border_color_bottom=expand_border(2, border_bottom, border_color, border),
-            border_color_left=expand_border(2, border_left, border_color, border))
+            border_color_left=expand_border(2, border_left, border_color, border),
+            text_decoration_line=text_decoration[0],
+            text_decoration_color=text_decoration[1],
+            text_decoration_style=text_decoration[2],
+            text_decoration_thickness=text_decoration[3])
 
         expand.update(kwargs)
         return cls(**expand)
@@ -272,6 +292,11 @@ class ComputedStyle:
             background_color=Color.TRANSPARENT,
             foreground_color=Color.WHITE,
             font=None,
+            text_decoration_line=TextDecorationLine.NONE,
+            text_decoration_color=Color.TRANSPARENT,
+            text_decoration_style=TextDecorationStyle.SOLID,
+            text_decoration_thickness=0,
+            text_decoration_offset=0,
             align=Align.START,
             box_sizing=BoxSizing.CONTENT):
 
@@ -314,6 +339,11 @@ class ComputedStyle:
         self.background_color = background_color
         self.foreground_color = foreground_color
         self.font = font
+        self.text_decoration_line = text_decoration_line
+        self.text_decoration_color = text_decoration_color
+        self.text_decoration_style = text_decoration_style
+        self.text_decoration_thickness = text_decoration_thickness
+        self.text_decoration_offset = text_decoration_offset
         self.align = align
         self.box_sizing = box_sizing
 

@@ -4,6 +4,8 @@ from .layout import (
     BorderStyle,
     Align,
     BoxSizing,
+    TextDecorationLine,
+    TextDecorationStyle,
     BitMap,
     ScaledBitMap,
     Percentage,

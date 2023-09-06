@@ -1,4 +1,4 @@
-from .layout import Color, Viewport, TextBox, BitMapBox
+from .layout import Color, TextDecorationLine, Viewport, TextBox, BitMapBox
 
 def background(box, framebuf):
     x = box.position.x - box.style.padding_left
@@ -61,6 +61,25 @@ def border(box, framebuf):
 def text(box, framebuf):
     if box.style.foreground_color != Color.TRANSPARENT:
         framebuf.text(box.text, box.position.x, box.position.y, box.style.foreground_color)
+
+    if (box.style.text_decoration_line != TextDecorationLine.NONE and
+            box.style.text_decoration_color != Color.TRANSPARENT and
+            box.style.text_decoration_thickness):
+        if box.style.text_decoration_line == TextDecorationLine.UNDERLINE:
+            y = box.position.y + box.dimensions.height + box.style.text_decoration_offset
+        elif box.style.text_decoration_line == TextDecorationLine.OVERLINE:
+            y = box.position.y - box.style.text_decoration_thickness - box.style.text_decoration_offset
+        elif box.style.text_decoration_line == TextDecorationLine.LINE_THROUGH:
+            y = (box.position.y +
+                box.style.text_decoration_offset +
+                (box.dimensions.height - box.style.text_decoration_thickness) // 2)
+
+        framebuf.fill_rect(
+            box.position.x,
+            y,
+            box.dimensions.width,
+            box.style.text_decoration_thickness,
+            box.style.text_decoration_color)
 
 def bitmap(box, framebuf):
     for dx, dy, bit in box.bitmap:
